@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'aus_address',  # Custom app for Australian address handling
 ]
 
 MIDDLEWARE = [
