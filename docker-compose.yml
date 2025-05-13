@@ -8,6 +8,7 @@ services:
       POSTGRES_USER: example
       POSTGRES_PASSWORD: example
       POSTGRES_DB: example_db
+      PG_USER: example
     ports:
       - "5432:5432"
     volumes:

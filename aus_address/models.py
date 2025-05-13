@@ -7,6 +7,7 @@ class State(models.Model):
     Model representing a state in Australia.
     Each state has a unique name and abbreviation.
     """
+
     STATE_CHOICES = [
         ("ACT", "Australian Capital Territory"),
         ("NSW", "New South Wales"),
@@ -30,10 +31,10 @@ class Suburb(gis_models.Model):
     Model representing a suburb in Australia.
     Each suburb is associated with a state and has a unique name within that state.
     """
+
     name = models.CharField(max_length=100)
     state = models.ForeignKey(State, on_delete=models.CASCADE)
-    geometry = gis_models.PolygonField()
-    centroid = gis_models.PointField()
+    location = gis_models.PointField(srid=4326, spatial_index=True)
 
     class Meta:
         unique_together = ("name", "state")
@@ -47,6 +48,7 @@ class Postcode(models.Model):
     Model representing a postcode in Australia.
     Each postcode is associated with a state and can cover multiple suburbs.
     """
+
     code = models.CharField(max_length=4, unique=True)
     suburbs = models.ManyToManyField(Suburb)
 
@@ -59,6 +61,7 @@ class Address(models.Model):
     Model representing a full address in Australia.
     Each address includes a unit number, street name, suburb, postcode, and state.
     """
+
     unit = models.CharField(max_length=20, blank=True, null=True)
     street = models.CharField(max_length=255, blank=True, null=True)
     suburb = models.ForeignKey(Suburb, on_delete=models.CASCADE)
