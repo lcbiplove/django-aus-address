@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework_gis',  # Add this line for GIS support
     'django.contrib.gis',  # Add this line for GIS support
     'aus_address',  # Custom app for Australian address handling
 ]
