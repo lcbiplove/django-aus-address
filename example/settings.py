@@ -37,7 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'aus_address',  # Custom app for Australian address handling
+    'django.contrib.gis',
+    'aus_address',
+    'rest_framework_gis',
 ]
 
 MIDDLEWARE = [
@@ -75,8 +77,12 @@ WSGI_APPLICATION = 'example.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': 'example_db',
+        'USER': 'example',
+        'PASSWORD': 'example',
+        'HOST': 'example_db',
+        'PORT': '5432',
     }
 }
 

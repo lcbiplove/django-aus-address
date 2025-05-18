@@ -1,11 +1,9 @@
 from django.db import models
 from django.contrib.gis.db import models as gis_models
 
-
 class State(models.Model):
     """
-    Model representing a state in Australia.
-    Each state has a unique name and abbreviation.
+    Simplified state model with just the essential fields
     """
     STATE_CHOICES = [
         ("ACT", "Australian Capital Territory"),
@@ -18,60 +16,36 @@ class State(models.Model):
         ("WA", "Western Australia"),
     ]
 
-    name = models.CharField(max_length=50, unique=True)
     abbreviation = models.CharField(max_length=3, choices=STATE_CHOICES, unique=True)
-
-    def __str__(self):
-        return self.get_abbreviation_display()
-
-
-class Suburb(gis_models.Model):
-    """
-    Model representing a suburb in Australia.
-    Each suburb is associated with a state and has a unique name within that state.
-    """
-    name = models.CharField(max_length=100)
-    state = models.ForeignKey(State, on_delete=models.CASCADE)
-    geometry = gis_models.PolygonField()
-    centroid = gis_models.PointField()
+    name = models.CharField(max_length=50)
 
     class Meta:
-        unique_together = ("name", "state")
+        ordering = ['name']
 
     def __str__(self):
-        return f"{self.name}, {self.state.abbreviation}"
+        return f"{self.name} ({self.abbreviation})"
 
 
-class Postcode(models.Model):
+class Location(gis_models.Model):
     """
-    Model representing a postcode in Australia.
-    Each postcode is associated with a state and can cover multiple suburbs.
+    Single source of truth for all locations with geospatial capabilities
     """
-    code = models.CharField(max_length=4, unique=True)
-    suburbs = models.ManyToManyField(Suburb)
+    postcode = models.CharField(max_length=4, db_index=True)
+    suburb = models.CharField(max_length=100, db_index=True)
+    state = models.ForeignKey(State, on_delete=models.CASCADE, related_name='locations')
+    point = gis_models.PointField(srid=4326, geography=True, spatial_index=True)
+    
+    class Meta:
+        unique_together = ('postcode', 'suburb', 'state')
+        ordering = ['suburb']
 
     def __str__(self):
-        return self.code
+        return f"{self.suburb}, {self.state.abbreviation} {self.postcode}"
 
+    @property
+    def latitude(self):
+        return self.point.y if self.point else None
 
-class Address(models.Model):
-    """
-    Model representing a full address in Australia.
-    Each address includes a unit number, street name, suburb, postcode, and state.
-    """
-    unit = models.CharField(max_length=20, blank=True, null=True)
-    street = models.CharField(max_length=255, blank=True, null=True)
-    suburb = models.ForeignKey(Suburb, on_delete=models.CASCADE)
-    postcode = models.ForeignKey(Postcode, on_delete=models.CASCADE)
-    state = models.ForeignKey(State, on_delete=models.CASCADE)
-
-    def __str__(self):
-        address_parts = []
-        if self.unit:
-            address_parts.append(self.unit)
-        if self.street:
-            address_parts.append(self.street)
-        address_parts.append(self.suburb.name)
-        address_parts.append(self.state.abbreviation)
-        address_parts.append(self.postcode.code)
-        return ", ".join(address_parts)
+    @property
+    def longitude(self):
+        return self.point.x if self.point else None
